@@ -1,0 +1,9 @@
+.popup__form_type_sign {
+    max-width: 358px;
+    min-height: 350px;
+    background-color: black;
+    border-radius: 10px;
+    position: relative;
+    margin-right: auto;
+    margin-left: auto;
+  }
