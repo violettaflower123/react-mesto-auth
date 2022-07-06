@@ -25,3 +25,13 @@ export const login = (email, password) => {
         body: JSON.stringify({ email, password }),
     }).then(checkRes);
 };
+
+export const checkToken = (token) => {
+  return fetch(`${BASE_URL}/users/me`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization" : `Bearer ${token}`,
+    },
+}).then(checkRes);
+}

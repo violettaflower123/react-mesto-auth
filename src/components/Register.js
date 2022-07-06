@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const Register = ({ title, buttonText, handleRegister }) => {
+const Register = ({ title, buttonText, children, handleRegister }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -57,9 +57,7 @@ const Register = ({ title, buttonText, handleRegister }) => {
             {buttonText || "Сохранить"}
           </button>
           <p className="popup__btm-redirect">
-            <a href="#" className="popup__btm-redirect-link">
-              Уже зарегистрированы? Войти.
-            </a>
+            {children}
           </p>
         </div>
       </form>

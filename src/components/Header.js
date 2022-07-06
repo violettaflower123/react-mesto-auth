@@ -4,7 +4,7 @@ const Header = ({children}) => {
     return (
         <header className="header">
         <a className="header__logo" alt="Логотип" href='#'/>
-        <p className="header__redirect">{children}</p>
+        <div className="header__redirect">{children}</div>
       </header>
     )
 }

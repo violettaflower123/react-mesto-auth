@@ -58,3 +58,6 @@
 @import url(./blocks/popup/__btm-redirect-link/popup__btm-redirect-link.css);
 @import url(./blocks/header/__redirect/header__redirect.css);
 @import url(./blocks/header/__redirect-link/header__redirect-link.css);
+@import url(./blocks/confirm/__img-success/confirm__img-success.css);
+@import url(./blocks/confirm/__title/confirm__title.css);
+@import url(./blocks/confirm/__img-error/confirm__img-error.css);

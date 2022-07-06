@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useSyncExternalStore } from "react";
 import "../App.css";
 import Header from "./Header";
 import Footer from "./Footer";
@@ -15,21 +15,28 @@ import Register from "./Register";
 import Login from "./Login";
 import { Link } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
-import * as auth from '../auth.js';
+import * as auth from "../auth.js";
+import InfoTooltip from "./InfoTooltip";
 
 function App() {
   const [cards, setCards] = useState([]);
   const [loggedIn, setLoggedIn] = useState(false);
   const navigate = useNavigate();
+  const [userData, setUserData] = useState({
+    userName: "",
+    email: "",
+  });
 
+  useEffect(() => {
+    tockenCheck();
+  }, []);
 
-
+  //получить карточки с сервера
   useEffect(() => {
     api
       .getDataInitialCards()
       .then((cards) => {
         setCards(cards);
-        //setID(profile._id);
       })
       .catch((err) => alert(err));
   }, []);
@@ -51,6 +58,8 @@ function App() {
   const [isEditProfilePoupOpen, setOpenProfile] = useState(false);
   const [isAddPlacePopupOpen, setOpenPlace] = useState(false);
   const [selectedCard, setSelectedCard] = useState(null);
+  const [isConfirmTooltipOpen, setOpenConfirmTooltip] = useState(false);
+  const [isErrorTooltipOpen, setOpenErrorTooltip] = useState(false);
 
   //открытие попапов
   function handleEditAvatarClick() {
@@ -69,12 +78,30 @@ function App() {
     setSelectedCard(card);
   }
 
+  //при успешной регистрации открывается модальное окно
+  function handleConfirmTooltip() {
+    setOpenConfirmTooltip(true);
+  }
+
+  //при неуспешной регистрации открывается попап
+  function handleErrorTooltip() {
+    setOpenErrorTooltip(true);
+  }
+
+  //при успешной регистрации открывается модальное окно-успех, если нажать на крестик - переход на страницу входа
+  function closeConfirmToolTip() {
+    closeAllPopups();
+    navigate("/sign-in");
+  }
+
   //закрытие попапов
   function closeAllPopups() {
     setOpenAvatar(false);
     setOpenPlace(false);
     setOpenProfile(false);
     setSelectedCard(null);
+    setOpenConfirmTooltip(false);
+    setOpenErrorTooltip(false);
   }
 
   //обновление данных о пользователе
@@ -140,17 +167,55 @@ function App() {
       .catch((err) => alert(err));
   }
 
+  //проверка асторизован ли пользователь при загрузке страницы
+  const tockenCheck = () => {
+    let jwt = localStorage.getItem("jwt");
+    if (jwt) {
+      auth.checkToken(jwt).then((res) => {
+        console.log(res);
+        if(res.jwt) {
+          
+          localStorage.setItem("jwt", res.jwt);
+          setUserData({
+            userName: res._id,
+            email: res._id
+          });
+          setLoggedIn(true);
+          navigate('/mesto-react');
+        }
+      });
+    }
+  };
+
   //регистрация
   const handleRegister = (email, password) => {
-    auth.register(email, password)
-    .then(() => navigate('/sign-in'))
-  }
+    auth
+      .register(email, password)
+      .then((data) => {
+        //console.log(data);
+        if (data.jwt) {
+          localStorage.setItem("jwt", data.jwt);
+        }
+      })
+      .then(() => handleConfirmTooltip())
+      .catch(() => handleErrorTooltip());
+  };
 
   //логин
   const handleLogin = (email, password) => {
-    auth.login(email, password)
-    .then(() => navigate('/mesto-react'))
-  }
+    auth
+      .login(email, password)
+      .then((data) => {
+        //console.log(data);
+        if (data.jwt) {
+          localStorage.setItem("jwt", data.jwt);
+        }
+      })
+      .then(() => {
+        setLoggedIn(true);
+        navigate("/mesto-react");
+      });
+  };
 
   return (
     <UserContext.Provider value={currentUser}>
@@ -162,7 +227,12 @@ function App() {
             <div className="app">
               <div className="page__content">
                 <>
-                  <Header />
+                  <Header>
+                    <div>
+                      <span>{userData.email}</span>
+                      <span>Выйти</span>
+                    </div>
+                  </Header>
 
                   <Main
                     onEditAvatar={handleEditAvatarClick}
@@ -213,9 +283,44 @@ function App() {
             <div className="app">
               <div className="page__content">
                 <Header>
-                  <Link to={'/sign-in'} className="header__redirect-link">Вход</Link>
+                  <Link to={"/sign-in"} className="header__redirect-link">
+                    Вход
+                  </Link>
                 </Header>
-                <Register title="Регистрация" buttonText="Зарегистрироваться" handleRegister={handleRegister} />
+                <Register
+                  title="Регистрация"
+                  buttonText="Зарегистрироваться"
+                  handleRegister={handleRegister}
+                >
+                  <Link to={"/sign-in"} className="popup__btm-redirect-link">
+                    Уже зарегистрированы? Войти.
+                  </Link>
+                </Register>
+                <InfoTooltip
+                  name="confirm"
+                  isOpen={isConfirmTooltipOpen}
+                  onClose={closeConfirmToolTip}
+                >
+                  <div>
+                    <div className="confirm__img-success"></div>
+                    <p className="confirm__title">
+                      Вы успешно зарегистрировались!
+                    </p>
+                  </div>
+                </InfoTooltip>
+
+                <InfoTooltip
+                  name="error"
+                  isOpen={isErrorTooltipOpen}
+                  onClose={closeAllPopups}
+                >
+                  <div>
+                    <div className="confirm__img-error"></div>
+                    <p className="confirm__title">
+                      Что-то пошло не так! Зарегистрируйтесь еще раз.
+                    </p>
+                  </div>
+                </InfoTooltip>
               </div>
             </div>
           }
@@ -226,17 +331,30 @@ function App() {
             <div className="app">
               <div className="page__content">
                 <Header>
-                  <Link to={'/sign-up'} className="header__redirect-link">Регистрация</Link>
+                  <Link to={"/sign-up"} className="header__redirect-link">
+                    Регистрация
+                  </Link>
                 </Header>
-                <Login title="Вход" buttonText="Войти" handleLogin={handleLogin} />
+                <Login
+                  title="Вход"
+                  buttonText="Войти"
+                  handleLogin={handleLogin}
+                />
               </div>
             </div>
           }
         />
-         <Route path="/" element={
-          loggedIn ? <Navigate to="/mesto-react" replace /> : <Navigate to="/sign-in" replace />
-         } />
-        
+        <Route
+          path="/"
+          element={
+            loggedIn ? (
+              <Navigate to="/mesto-react" replace />
+            ) : (
+              <Navigate to="/sign-in" replace />
+            )
+          }
+        />
+
         <Route path="*" element={<div>404</div>} />
       </Routes>
     </UserContext.Provider>

@@ -1,0 +1,10 @@
+.confirm__title {
+    display: block;
+    max-width: 358px;
+    font-family: 'Inter-900', sans-serif, Arial;
+    font-size: 24px;
+    line-height: 29.05px;
+    margin-right: auto;
+    margin-left: auto;
+    text-align: center;
+}
