@@ -27,6 +27,7 @@ function App() {
     email: "",
   });
 
+  //проверка токена при каждой загрузке страницы
   useEffect(() => {
     tockenCheck();
   }, []);
@@ -91,7 +92,7 @@ function App() {
   //при успешной регистрации открывается модальное окно-успех, если нажать на крестик - переход на страницу входа
   function closeConfirmToolTip() {
     closeAllPopups();
-    navigate("/sign-in");
+    navigate("/signin");
   }
 
   //закрытие попапов
@@ -169,19 +170,16 @@ function App() {
 
   //проверка асторизован ли пользователь при загрузке страницы
   const tockenCheck = () => {
-    let jwt = localStorage.getItem("jwt");
+    let jwt = localStorage.getItem("token");
     if (jwt) {
-      auth.checkToken(jwt).then((res) => {
-        console.log(res);
-        if(res.jwt) {
-          
-          localStorage.setItem("jwt", res.jwt);
+      auth.checkToken(jwt).then((data) => {
+        if (data.data.email) {
           setUserData({
-            userName: res._id,
-            email: res._id
+            userData: data.data._id,
+            email: data.data.email,
           });
           setLoggedIn(true);
-          navigate('/mesto-react');
+          navigate("/");
         }
       });
     }
@@ -192,9 +190,13 @@ function App() {
     auth
       .register(email, password)
       .then((data) => {
-        //console.log(data);
-        if (data.jwt) {
-          localStorage.setItem("jwt", data.jwt);
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+          setUserData({
+            userName: data.data._id,
+            email: data.email,
+          })
+
         }
       })
       .then(() => handleConfirmTooltip())
@@ -206,157 +208,182 @@ function App() {
     auth
       .login(email, password)
       .then((data) => {
-        //console.log(data);
-        if (data.jwt) {
-          localStorage.setItem("jwt", data.jwt);
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+          setUserData({
+            userName: data._id,
+            email: data.email
+          })
         }
       })
       .then(() => {
         setLoggedIn(true);
-        navigate("/mesto-react");
+        navigate("/");
+        tockenCheck();
       });
+  };
+
+  //выход из системы
+  const handleLogOut = () => {
+    localStorage.removeItem("token");
+    setUserData({
+      userName: "",
+      email: "",
+    });
+    setLoggedIn(false);
+    navigate("/signin");
   };
 
   return (
     <UserContext.Provider value={currentUser}>
-      <Routes>
-        <Route
-          exact
-          path="/mesto-react"
-          element={
-            <div className="app">
-              <div className="page__content">
+      <div className="app">
+        <div className="page__content">
+          <Routes>
+            <Route
+              path="/"
+              element={
                 <>
                   <Header>
                     <div>
-                      <span>{userData.email}</span>
-                      <span>Выйти</span>
+                      <span className="header__user-email">{userData.email}</span>
+                      <button
+                        className="header__exit-btn"
+                        onClick={handleLogOut}
+                      >
+                        Выйти
+                      </button>
                     </div>
                   </Header>
 
-                  <Main
-                    onEditAvatar={handleEditAvatarClick}
-                    onEditProfile={handleEditProfileClick}
-                    onAddPlace={handleAddPlaceClick}
-                    onCardClick={handleCardClick}
-                    cards={cards}
-                    onCardLike={handleCardLike}
-                    onCardDelete={handleCardDelete}
-                  />
-
+                  <ProtectedRoute 
+                  path='/' 
+                  component={Main}
+                  isLogged={loggedIn}
+                      onEditAvatar={handleEditAvatarClick}
+                      onEditProfile={handleEditProfileClick}
+                      onAddPlace={handleAddPlaceClick}
+                      onCardClick={handleCardClick}
+                      cards={cards}
+                      onCardLike={handleCardLike}
+                      onCardDelete={handleCardDelete}>
+                  </ProtectedRoute>
                   <Footer />
                 </>
+              }
+            />
+            <Route
+              path="/signup"
+              element={
+                <div className="app">
+                  <div className="page__content">
+                    <Header>
+                      <Link to={"/signin"} className="header__redirect-link">
+                        Вход
+                      </Link>
+                    </Header>
+                    <Register
+                      title="Регистрация"
+                      buttonText="Зарегистрироваться"
+                      handleRegister={handleRegister}
+                    >
+                      <Link
+                        to={"/signin"}
+                        className="popup__btm-redirect-link"
+                      >
+                        Уже зарегистрированы? Войти.
+                      </Link>
+                    </Register>
+                    <InfoTooltip
+                      name="confirm"
+                      isOpen={isConfirmTooltipOpen}
+                      onClose={closeConfirmToolTip}
+                    >
+                      <div>
+                        <div className="confirm__img-success"></div>
+                        <p className="confirm__title">
+                          Вы успешно зарегистрировались!
+                        </p>
+                      </div>
+                    </InfoTooltip>
 
-                <EditProfilePopup
-                  isOpen={isEditProfilePoupOpen}
-                  onClose={closeAllPopups}
-                  onUpdateUser={handleUpdateUser}
-                />
-
-                <AddPlacePopup
-                  isOpen={isAddPlacePopupOpen}
-                  onClose={closeAllPopups}
-                  onAddNewPlace={handleAddNewCard}
-                />
-
-                <ImagePopup card={selectedCard} onClose={closeAllPopups} />
-
-                <PopupWithForm
-                  name="delete"
-                  title="Вы уверены?"
-                  buttonText="Да"
-                  extraClass="popup__form_type_delete"
-                />
-
-                <EditAvatarPopup
-                  isOpen={isEditAvatarPopupOpen}
-                  onClose={closeAllPopups}
-                  onUpdateAvatar={handleUpdateAvatar}
-                />
-              </div>
-            </div>
-          }
-        />
-        <Route
-          path="/sign-up"
-          element={
-            <div className="app">
-              <div className="page__content">
-                <Header>
-                  <Link to={"/sign-in"} className="header__redirect-link">
-                    Вход
-                  </Link>
-                </Header>
-                <Register
-                  title="Регистрация"
-                  buttonText="Зарегистрироваться"
-                  handleRegister={handleRegister}
-                >
-                  <Link to={"/sign-in"} className="popup__btm-redirect-link">
-                    Уже зарегистрированы? Войти.
-                  </Link>
-                </Register>
-                <InfoTooltip
-                  name="confirm"
-                  isOpen={isConfirmTooltipOpen}
-                  onClose={closeConfirmToolTip}
-                >
-                  <div>
-                    <div className="confirm__img-success"></div>
-                    <p className="confirm__title">
-                      Вы успешно зарегистрировались!
-                    </p>
+                    <InfoTooltip
+                      name="error"
+                      isOpen={isErrorTooltipOpen}
+                      onClose={closeAllPopups}
+                    >
+                      <div>
+                        <div className="confirm__img-error"></div>
+                        <p className="confirm__title">
+                          Что-то пошло не так! Зарегистрируйтесь еще раз.
+                        </p>
+                      </div>
+                    </InfoTooltip>
                   </div>
-                </InfoTooltip>
-
-                <InfoTooltip
-                  name="error"
-                  isOpen={isErrorTooltipOpen}
-                  onClose={closeAllPopups}
-                >
-                  <div>
-                    <div className="confirm__img-error"></div>
-                    <p className="confirm__title">
-                      Что-то пошло не так! Зарегистрируйтесь еще раз.
-                    </p>
+                </div>
+              }
+            />
+            <Route
+              path="/signin"
+              element={
+                <div className="app">
+                  <div className="page__content">
+                    <Header>
+                      <Link to={"/signup"} className="header__redirect-link">
+                        Регистрация
+                      </Link>
+                    </Header>
+                    <Login
+                      title="Вход"
+                      buttonText="Войти"
+                      handleLogin={handleLogin}
+                      //tockenCheck={tockenCheck}
+                    />
                   </div>
-                </InfoTooltip>
-              </div>
-            </div>
-          }
-        />
-        <Route
-          path="/sign-in"
-          element={
-            <div className="app">
-              <div className="page__content">
-                <Header>
-                  <Link to={"/sign-up"} className="header__redirect-link">
-                    Регистрация
-                  </Link>
-                </Header>
-                <Login
-                  title="Вход"
-                  buttonText="Войти"
-                  handleLogin={handleLogin}
-                />
-              </div>
-            </div>
-          }
-        />
-        <Route
-          path="/"
-          element={
-            loggedIn ? (
-              <Navigate to="/mesto-react" replace />
-            ) : (
-              <Navigate to="/sign-in" replace />
-            )
-          }
-        />
+                </div>
+              }
+            />
+            <Route
+              path="/"
+              element={
+                loggedIn ? (
+                  <Navigate to="/" replace />
+                ) : (
+                  <Navigate to="/signin" replace />
+                )
+              }
+            />
 
-        <Route path="*" element={<div>404</div>} />
-      </Routes>
+            <Route path="*" element={<div>404</div>} />
+          </Routes>
+
+          <EditProfilePopup
+            isOpen={isEditProfilePoupOpen}
+            onClose={closeAllPopups}
+            onUpdateUser={handleUpdateUser}
+          />
+
+          <AddPlacePopup
+            isOpen={isAddPlacePopupOpen}
+            onClose={closeAllPopups}
+            onAddNewPlace={handleAddNewCard}
+          />
+
+          <ImagePopup card={selectedCard} onClose={closeAllPopups} />
+
+          <PopupWithForm
+            name="delete"
+            title="Вы уверены?"
+            buttonText="Да"
+            extraClass="popup__form_type_delete"
+          />
+
+          <EditAvatarPopup
+            isOpen={isEditAvatarPopupOpen}
+            onClose={closeAllPopups}
+            onUpdateAvatar={handleUpdateAvatar}
+          />
+        </div>
+      </div>
     </UserContext.Provider>
   );
 }

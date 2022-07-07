@@ -61,3 +61,5 @@
 @import url(./blocks/confirm/__img-success/confirm__img-success.css);
 @import url(./blocks/confirm/__title/confirm__title.css);
 @import url(./blocks/confirm/__img-error/confirm__img-error.css);
+@import url(./blocks/header/__exit-btn/header__exit-btn.css);
+@import url(./blocks/header/__user-email/header__user-email.css);
