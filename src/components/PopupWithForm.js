@@ -14,7 +14,6 @@ const PopupWithForm = ({
         className={`popup__form ${extraClass}`}
         name={`form-${name}`}
         onSubmit={onSubmit}
-        noValidate
       >
         <button
           className="popup__close popup__close_name"
@@ -27,7 +26,7 @@ const PopupWithForm = ({
           {children}
           <button
             type="submit"
-            className="popup__button popup__button_disabled"
+            className="popup__button"
           >
             {buttonText || "Сохранить"}
           </button>

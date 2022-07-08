@@ -37,6 +37,7 @@ const Login = ({title, buttonText, handleLogin }) => {
                   className="popup__input popup__input_type_sign popup__item-email"
                   minLength="2"
                   onChange={handleLoginEmail}
+                  value={email}
                 />
                 <input
                   required
@@ -47,6 +48,7 @@ const Login = ({title, buttonText, handleLogin }) => {
                   className="popup__input popup__input_type_sign popup__item-password"
                   minLength="2"
                   onChange={handleLoginPassword}
+                  value={password}
                 />
               </fieldset>
               <button

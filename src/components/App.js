@@ -1,5 +1,4 @@
 import { useState, useEffect, useContext, useSyncExternalStore } from "react";
-import "../App.css";
 import Header from "./Header";
 import Footer from "./Footer";
 import Main from "./Main";
@@ -15,7 +14,7 @@ import Register from "./Register";
 import Login from "./Login";
 import { Link } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
-import * as auth from "../auth.js";
+import * as auth from "../utils/auth.js";
 import InfoTooltip from "./InfoTooltip";
 
 function App() {
@@ -26,6 +25,12 @@ function App() {
     userName: "",
     email: "",
   });
+  const [isEditAvatarPopupOpen, setOpenAvatar] = useState(false);
+  const [isEditProfilePoupOpen, setOpenProfile] = useState(false);
+  const [isAddPlacePopupOpen, setOpenPlace] = useState(false);
+  const [selectedCard, setSelectedCard] = useState(null);
+  const [isInfotoolOpen, setOpenInfotool] = useState(false);
+  const [isSuccess, setSuccess] = useState(false);
 
   //проверка токена при каждой загрузке страницы
   useEffect(() => {
@@ -55,13 +60,6 @@ function App() {
       .catch((err) => alert(err));
   }, []);
 
-  const [isEditAvatarPopupOpen, setOpenAvatar] = useState(false);
-  const [isEditProfilePoupOpen, setOpenProfile] = useState(false);
-  const [isAddPlacePopupOpen, setOpenPlace] = useState(false);
-  const [selectedCard, setSelectedCard] = useState(null);
-  const [isConfirmTooltipOpen, setOpenConfirmTooltip] = useState(false);
-  const [isErrorTooltipOpen, setOpenErrorTooltip] = useState(false);
-
   //открытие попапов
   function handleEditAvatarClick() {
     setOpenAvatar(true);
@@ -79,18 +77,25 @@ function App() {
     setSelectedCard(card);
   }
 
-  //при успешной регистрации открывается модальное окно
-  function handleConfirmTooltip() {
-    setOpenConfirmTooltip(true);
+  function handleInfoTool() {
+    setOpenInfotool(true);
   }
+  // //при успешной регистрации открывается модальное окно
+  // function handleConfirmTooltip() {
+  //   setOpenConfirmTooltip(true);
+  // }
 
-  //при неуспешной регистрации открывается попап
-  function handleErrorTooltip() {
-    setOpenErrorTooltip(true);
-  }
+  // //при неуспешной регистрации открывается попап
+  // function handleErrorTooltip() {
+  //   setOpenErrorTooltip(true);
+  // }
 
-  //при успешной регистрации открывается модальное окно-успех, если нажать на крестик - переход на страницу входа
-  function closeConfirmToolTip() {
+  // //при успешной регистрации открывается модальное окно-успех, если нажать на крестик - переход на страницу входа
+  // function closeConfirmToolTip() {
+  //   closeAllPopups();
+  //   navigate("/signin");
+  // }
+  function closeInfotoolTip() {
     closeAllPopups();
     navigate("/signin");
   }
@@ -101,8 +106,7 @@ function App() {
     setOpenPlace(false);
     setOpenProfile(false);
     setSelectedCard(null);
-    setOpenConfirmTooltip(false);
-    setOpenErrorTooltip(false);
+    setOpenInfotool(false);
   }
 
   //обновление данных о пользователе
@@ -136,6 +140,10 @@ function App() {
         closeAllPopups();
       })
       .catch((err) => alert(err));
+  }
+
+  function handleLoginInfotool() {
+
   }
 
   //ставим лайки
@@ -195,12 +203,17 @@ function App() {
           setUserData({
             userName: data.data._id,
             email: data.email,
-          })
-
+          });
         }
       })
-      .then(() => handleConfirmTooltip())
-      .catch(() => handleErrorTooltip());
+      .then(() => 
+      //setSuccess(true),
+      handleInfoTool()
+      )
+      .catch(() =>
+          setSuccess(true),
+        handleInfoTool()
+      );
   };
 
   //логин
@@ -208,19 +221,22 @@ function App() {
     auth
       .login(email, password)
       .then((data) => {
+        setOpenInfotool(null);
         if (data.token) {
           localStorage.setItem("token", data.token);
           setUserData({
             userName: data._id,
-            email: data.email
-          })
+            email: data.email,
+          });
+          setLoggedIn(true);
+          navigate("/");
+          tockenCheck();
         }
       })
-      .then(() => {
-        setLoggedIn(true);
-        navigate("/");
-        tockenCheck();
-      });
+      .catch(() =>
+        setSuccess(true),
+        handleInfoTool()
+      );
   };
 
   //выход из системы
@@ -245,7 +261,9 @@ function App() {
                 <>
                   <Header>
                     <div>
-                      <span className="header__user-email">{userData.email}</span>
+                      <span className="header__user-email">
+                        {userData.email}
+                      </span>
                       <button
                         className="header__exit-btn"
                         onClick={handleLogOut}
@@ -255,18 +273,18 @@ function App() {
                     </div>
                   </Header>
 
-                  <ProtectedRoute 
-                  path='/' 
-                  component={Main}
-                  isLogged={loggedIn}
-                      onEditAvatar={handleEditAvatarClick}
-                      onEditProfile={handleEditProfileClick}
-                      onAddPlace={handleAddPlaceClick}
-                      onCardClick={handleCardClick}
-                      cards={cards}
-                      onCardLike={handleCardLike}
-                      onCardDelete={handleCardDelete}>
-                  </ProtectedRoute>
+                  <ProtectedRoute
+                    path="/"
+                    component={Main}
+                    isLogged={loggedIn}
+                    onEditAvatar={handleEditAvatarClick}
+                    onEditProfile={handleEditProfileClick}
+                    onAddPlace={handleAddPlaceClick}
+                    onCardClick={handleCardClick}
+                    cards={cards}
+                    onCardLike={handleCardLike}
+                    onCardDelete={handleCardDelete}
+                  ></ProtectedRoute>
                   <Footer />
                 </>
               }
@@ -286,38 +304,10 @@ function App() {
                       buttonText="Зарегистрироваться"
                       handleRegister={handleRegister}
                     >
-                      <Link
-                        to={"/signin"}
-                        className="popup__btm-redirect-link"
-                      >
+                      <Link to={"/signin"} className="popup__btm-redirect-link">
                         Уже зарегистрированы? Войти.
                       </Link>
                     </Register>
-                    <InfoTooltip
-                      name="confirm"
-                      isOpen={isConfirmTooltipOpen}
-                      onClose={closeConfirmToolTip}
-                    >
-                      <div>
-                        <div className="confirm__img-success"></div>
-                        <p className="confirm__title">
-                          Вы успешно зарегистрировались!
-                        </p>
-                      </div>
-                    </InfoTooltip>
-
-                    <InfoTooltip
-                      name="error"
-                      isOpen={isErrorTooltipOpen}
-                      onClose={closeAllPopups}
-                    >
-                      <div>
-                        <div className="confirm__img-error"></div>
-                        <p className="confirm__title">
-                          Что-то пошло не так! Зарегистрируйтесь еще раз.
-                        </p>
-                      </div>
-                    </InfoTooltip>
                   </div>
                 </div>
               }
@@ -336,7 +326,6 @@ function App() {
                       title="Вход"
                       buttonText="Войти"
                       handleLogin={handleLogin}
-                      //tockenCheck={tockenCheck}
                     />
                   </div>
                 </div>
@@ -353,8 +342,14 @@ function App() {
               }
             />
 
-            <Route path="*" element={<div>404</div>} />
+            <Route path="*" element={<Navigate to="/signin" />} />
           </Routes>
+
+          <InfoTooltip
+            isOpen={isInfotoolOpen}
+            isSuccess={isSuccess}
+            onClose={isSuccess ? closeAllPopups : closeInfotoolTip}
+          ></InfoTooltip>
 
           <EditProfilePopup
             isOpen={isEditProfilePoupOpen}

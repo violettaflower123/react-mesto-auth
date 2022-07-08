@@ -37,6 +37,7 @@ const Register = ({ title, buttonText, children, handleRegister }) => {
               className="popup__input popup__input_type_sign popup__item-email"
               minLength="2"
               onChange={handleRegisterEmail}
+              value={email}
             />
             <input
               required
@@ -47,6 +48,7 @@ const Register = ({ title, buttonText, children, handleRegister }) => {
               className="popup__input popup__input_type_sign popup__item-password"
               minLength="2"
               onChange={handleRegisterPassword}
+              value={password}
             />
           </fieldset>
           <button

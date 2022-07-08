@@ -23,15 +23,6 @@ const EditProfilePopup = (props) => {
     setDescription(currentUser.about);
   }, [currentUser]);
 
-  /*
-  //очистка полей ввода при открытии
-  useEffect(() => {
-    if(props.isOpen) {
-      setName(currentUser.name);
-      setDescription(currentUser.description);
-    }
-  }, [props.isOpen]);
-  */
 
     //что происходит при сабмите формы
   function handleSubmit(e) {

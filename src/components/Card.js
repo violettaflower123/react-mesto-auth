@@ -41,10 +41,9 @@ const Card = ({ card, onCardClick, onCardLike, onCardDelete }) => {
       <button className={cardDeleteButtonClassName} onClick={handleDelete}></button>
       <img
         className="element__image"
-        alt="Изображение"
+        alt={card.name}
         src={card.link}
         onClick={handleCardClick}
-        //onCardLike={onCardLike}
       />
 
       <div className="element__info">

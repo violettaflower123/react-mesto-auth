@@ -1,7 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-//import { CardsContext } from "../context/CardsContext";
 import { UserContext } from "../context/UserContext";
-import "../index.css";
 import Card from "./Card";
 
 const Main = (props) => {
@@ -43,7 +41,7 @@ const Main = (props) => {
         aria-label="Коллекция фото с подписями и кнопкой Лайк"
       >
         <ul className="elements__box">
-          {props.cards.map((card, _id) => (
+          {props.cards.map((card) => (
             <Card
               card={card}
               onCardClick={props.onCardClick}
