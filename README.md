@@ -16,4 +16,4 @@ Java Script.
 Увеличение карточек.
 React.
 
-*Ссылка на проект:*http://violettaflower123.github.io/mesto-react/
+*Ссылка на проект:*http://violettaflower123.github.io/react-mesto-auth
