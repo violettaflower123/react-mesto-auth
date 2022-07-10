@@ -19,8 +19,6 @@
   .elements__box {
     grid-template-columns: 2fr;
     max-width: 584px;
-    margin-left: 92px;
-    margin-right: 92px;
 
   }
 }

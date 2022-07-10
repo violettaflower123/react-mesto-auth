@@ -31,6 +31,7 @@ function App() {
   const [selectedCard, setSelectedCard] = useState(null);
   const [isInfotoolOpen, setOpenInfotool] = useState(false);
   const [isSuccess, setSuccess] = useState(false);
+  const [currentUser, setCurrentUser] = useState({ name: "", about: "" });
 
   //проверка токена при каждой загрузке страницы
   useEffect(() => {
@@ -39,26 +40,29 @@ function App() {
 
   //получить карточки с сервера
   useEffect(() => {
-    api
-      .getDataInitialCards()
-      .then((cards) => {
-        setCards(cards);
-      })
-      .catch((err) => alert(err));
-  }, []);
+    if (loggedIn === true) {
+      api
+        .getDataInitialCards()
+        .then((cards) => {
+          setCards(cards);
+        })
+        .catch((err) => alert(err));
+    }
+  }, [loggedIn]);
 
-  const [currentUser, setCurrentUser] = useState({ name: "", about: "" });
 
   //получить данные о пользователе с сервера
   useEffect(() => {
-    api
-      .getDataUser()
-
-      .then((profile) => {
-        setCurrentUser(profile);
-      })
-      .catch((err) => alert(err));
-  }, []);
+    if(loggedIn === true) {   
+     api
+         .getDataUser()
+   
+         .then((profile) => {
+           setCurrentUser(profile);
+         })
+         .catch((err) => alert(err));
+       }
+     }, [loggedIn]);
 
   //открытие попапов
   function handleEditAvatarClick() {
@@ -80,21 +84,7 @@ function App() {
   function handleInfoTool() {
     setOpenInfotool(true);
   }
-  // //при успешной регистрации открывается модальное окно
-  // function handleConfirmTooltip() {
-  //   setOpenConfirmTooltip(true);
-  // }
-
-  // //при неуспешной регистрации открывается попап
-  // function handleErrorTooltip() {
-  //   setOpenErrorTooltip(true);
-  // }
-
-  // //при успешной регистрации открывается модальное окно-успех, если нажать на крестик - переход на страницу входа
-  // function closeConfirmToolTip() {
-  //   closeAllPopups();
-  //   navigate("/signin");
-  // }
+  //закрытие окна подтверждения регистрации
   function closeInfotoolTip() {
     closeAllPopups();
     navigate("/signin");
@@ -107,6 +97,11 @@ function App() {
     setOpenProfile(false);
     setSelectedCard(null);
     setOpenInfotool(false);
+  }
+
+  //закрытие окна подтверждения регистрации в зависимости от того, успех или ошибка
+  function onCloseInfotool(isSuccess) {
+    return isSuccess ? closeAllPopups : closeInfotoolTip;
   }
 
   //обновление данных о пользователе
@@ -140,10 +135,6 @@ function App() {
         closeAllPopups();
       })
       .catch((err) => alert(err));
-  }
-
-  function handleLoginInfotool() {
-
   }
 
   //ставим лайки
@@ -189,7 +180,7 @@ function App() {
           setLoggedIn(true);
           navigate("/");
         }
-      });
+      }).catch((err) => console.log(err));
     }
   };
 
@@ -206,14 +197,11 @@ function App() {
           });
         }
       })
-      .then(() => 
-      //setSuccess(true),
-      handleInfoTool()
-      )
-      .catch(() =>
-          setSuccess(true),
+      .then(() =>
+        //setSuccess(true),
         handleInfoTool()
-      );
+      )
+      .catch(() => setSuccess(true), handleInfoTool());
   };
 
   //логин
@@ -221,8 +209,8 @@ function App() {
     auth
       .login(email, password)
       .then((data) => {
-        setOpenInfotool(null);
         if (data.token) {
+          setOpenInfotool(false);
           localStorage.setItem("token", data.token);
           setUserData({
             userName: data._id,
@@ -233,10 +221,7 @@ function App() {
           tockenCheck();
         }
       })
-      .catch(() =>
-        setSuccess(true),
-        handleInfoTool()
-      );
+      .catch(() => setSuccess(true), handleInfoTool());
   };
 
   //выход из системы
@@ -250,6 +235,7 @@ function App() {
     navigate("/signin");
   };
 
+  
   return (
     <UserContext.Provider value={currentUser}>
       <div className="app">
@@ -349,6 +335,7 @@ function App() {
             isOpen={isInfotoolOpen}
             isSuccess={isSuccess}
             onClose={isSuccess ? closeAllPopups : closeInfotoolTip}
+            //onClose={onCloseInfotool}
           ></InfoTooltip>
 
           <EditProfilePopup

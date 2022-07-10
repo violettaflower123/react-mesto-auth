@@ -1,9 +1,9 @@
 const InfoTooltip = (props) => {
   return (
     //<section className={`popup popup_type_${props.name} popup_opened`}>
-      <section className={`popup popup_type_${props.name} ${props.isOpen && "popup_opened"}`}>
+      <section className={`popup popup_type_info ${props.isOpen && "popup_opened"}`}>
     
-      <div className={`popup__form popup__form_confirm`}>
+      <div className={`popup__form popup__form_type_confirm`}>
         <button
           className="popup__close popup__close_name"
           type="button"

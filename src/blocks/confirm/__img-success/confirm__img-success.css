@@ -10,3 +10,12 @@
     margin-left: 155px;
     margin-bottom: 32px;
 }
+
+@media screen and (max-width: 768px) {
+    .confirm__img-success {
+        margin-left: 80px;
+        margin-right: 80px;
+        margin-top: 50px;
+        margin-bottom: 40px;
+    }
+}

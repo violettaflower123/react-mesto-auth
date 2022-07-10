@@ -4,10 +4,6 @@ const Login = ({title, buttonText, handleLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  //useEffect(() => {
-    //tockenCheck();
-  //}, [])
-
   const handleLoginEmail = (e) => {
     setEmail(e.target.value);
   }

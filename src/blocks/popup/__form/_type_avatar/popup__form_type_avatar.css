@@ -8,3 +8,9 @@
       min-height: 322px;
     }
   }
+
+  @media screen and (max-width: 320px) {
+    .popup__form_type_avatar {
+      min-height: 280px;
+    }
+  }
